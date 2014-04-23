@@ -75,10 +75,12 @@ template = Template(IMAGES_TEMPLATE)
 
 """
 Given a flickr api search query with format='json', returns the data in actual json format
-flickr_search_response = flickr.photos_search(
-        format='json', 
-        ...
-    )
+
+get_json(flickr.photos_search(
+        tag_mode='any',
+        tag='dog',
+        license='7',
+        format='json'))
 """
 def get_json(flickr_search_response):
     json_string = flickr_search_response[14:-1]
@@ -141,6 +143,27 @@ def get_count(flickr_search_response):
 
 # <codecell>
 
+"""
+Search Parameters 
+
+extras
+
+A comma-delimited list of extra information to fetch for each returned record. 
+Currently supported fields are: 
+
+description, license, date_upload, date_taken, owner_name, icon_server, 
+original_format, last_update, geo, tags, machine_tags, o_dims, views, 
+media, path_alias, url_sq, url_t, url_s, url_q, url_m, url_n, url_z, url_c, url_l, url_o
+"""
+
+# <codecell>
+
+"""
+Examples of how to use function calls:
+"""
+
+# <codecell>
+
 get_count(flickr.photos_search(
         tag_mode='any',
         tag='dog',
@@ -149,8 +172,9 @@ get_count(flickr.photos_search(
 
 # <codecell>
 
-get_data(flickr.photos_search(
+get_photos(flickr.photos_search(
         text='dog',
+        extras='license, date_upload, last_update, date_taken, owner_name, geo, tags, views, url_m',
         license='7',
         format='json'))
 
