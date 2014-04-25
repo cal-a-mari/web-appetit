@@ -15,10 +15,15 @@ from IPython.display import display, Image
 import json
 
 import numpy as np
-import matplotlib.pyplot as plt
 from pandas import DataFrame, Series, Index
 import pandas as pd
 from itertools import islice
+
+import matplotlib.pyplot as plt
+from pylab import figure, show
+
+pd.set_option('display.max_columns', 50)
+%pylab inline
 
 APIKEY = "800f28ae42a58a95f0005fb0fe022a78"
 
@@ -67,6 +72,7 @@ IMAGES_TEMPLATE = CSS + """
 
 template = Template(IMAGES_TEMPLATE)
 
+
 # To display photos in HTML, use:
 
 # photos = get_photos_static_urls(flickr.photos_search(
@@ -76,6 +82,77 @@ template = Template(IMAGES_TEMPLATE)
 
 #   template = Template(IMAGES_TEMPLATE)
 #   HTML(template.render(items=photos[:30]))  # shows first 30 photos
+
+
+
+# Or just use the function:
+def display_photos(photos, count=30):
+    # @photos the result from get_page_photos(text='dog')['photos']
+    urls = []
+    for photo in photos[:count]:
+        urls.append(photo['url_m'])
+    return HTML(template.render(items=urls[:count])) 
+
+# <codecell>
+
+"""
+Newer functions that take in Flickr search paramenters as paramenters 
+rather than take in the json result from a Flickr query
+"""
+
+"""
+Returns the json list of all photos, ignoring the 500 photo return limit
+By default returns only Creative Common license photos
+"""
+def get_all_photos(tags='', text='', min_taken_date='', max_taken_date='', license='7'):
+    res = flickr.photos_search(
+        text=text,
+        tags=tags,
+        extras='license, date_upload, last_update, date_taken, owner_name, geo, tags, views, url_m',
+        license=license,
+        min_taken_date=min_taken_date,
+        max_taken_date=max_taken_date,
+        page=1,
+        format='json')
+    res_json = get_json(res)
+    tot_pages = res_json['photos']['pages']
+    photos = res_json['photos']['photo']
+    
+    for i in range(tot_pages): 
+        next_page_res =  flickr.photos_search(
+            text=text,
+            tags=tags,
+            extras='license, date_upload, last_update, date_taken, owner_name, geo, tags, views, url_m',
+            license=license,
+            min_taken_date=min_taken_date,
+            max_taken_date=max_taken_date,
+            page=i+2,
+            format='json')
+        next_page_res_json = get_json(next_page_res)
+        photos += next_page_res_json['photos']['photo']
+        
+    num_photos = len(photos)
+    return {'photos': photos, 'length': num_photos}
+
+"""
+Returns the json list of first 100 photos
+By default returns only Creative Common license photos
+"""
+def get_page_photos(tags='', text='', min_taken_date='', max_taken_date='', license='7', per_page=100, page=1):
+    res = flickr.photos_search(
+        text=text,
+        tags=tags,
+        extras='license, date_upload, last_update, date_taken, owner_name, geo, tags, views, url_m',
+        license=license,
+        min_taken_date=min_taken_date,
+        max_taken_date=max_taken_date,
+        per_page=per_page,
+        page=page,
+        format='json')
+    res_json = get_json(res)
+    photos = res_json['photos']['photo']
+    num_photos = len(photos)
+    return {'photos': photos, 'length': num_photos}
 
 # <codecell>
 
@@ -116,36 +193,6 @@ u'photo': [{u'farm': 6,
 def get_photos(flickr_search_response):
     return get_json(flickr_search_response)['photos']['photo']
 
-def get_all_photos(tags='', text='', min_taken_date='', max_taken_date='', license='7'):
-    res = flickr.photos_search(
-        text=text,
-        tags=tags,
-        extras='license, date_upload, last_update, date_taken, owner_name, geo, tags, views, url_m',
-        license=license,
-        min_taken_date=min_taken_date,
-        max_taken_date=max_taken_date,
-        page=1,
-        format='json')
-    res_json = get_json(res)
-    tot_pages = res_json['photos']['pages']
-    photos = res_json['photos']['photo']
-    
-    for i in range(tot_pages): 
-        next_page_res =  flickr.photos_search(
-            text=text,
-            tags=tags,
-            extras='license, date_upload, last_update, date_taken, owner_name, geo, tags, views, url_m',
-            license=license,
-            min_taken_date=min_taken_date,
-            max_taken_date=max_taken_date,
-            page=i+2,
-            format='json')
-        next_page_res_json = get_json(next_page_res)
-        photos += next_page_res_json['photos']['photo']
-        
-    num_photos = len(photos)
-    return {'photos': photos, 'length': num_photos}
-
 """
 Returns array of Flikr photo URLs -- opens in Flickr photo viewer
 """
@@ -175,7 +222,8 @@ def get_photos_static_urls(flickr_search_response):
 Returns the count of results
 """
 def get_count(flickr_search_response):
-    return get_json(flickr_search_response)['photos']['total']
+    return int(get_json(flickr_search_response)['photos']['total'])
+               
 
 # <codecell>
 
