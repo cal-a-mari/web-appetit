@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 # <nbformat>3.0</nbformat>
 
-# <codecell>
+# <markdowncell>
 
-"""
-This notebook includes all the main functions we created to parse Flickr photo data
-"""
+# This notebook includes all the main functions we created to parse Flickr photo data
 
 # <codecell>
 
@@ -23,7 +21,6 @@ import matplotlib.pyplot as plt
 from pylab import figure, show
 
 pd.set_option('display.max_columns', 50)
-%pylab inline
 
 APIKEY = "800f28ae42a58a95f0005fb0fe022a78"
 
@@ -104,10 +101,11 @@ rather than take in the json result from a Flickr query
 Returns the json list of all photos, ignoring the 500 photo return limit
 By default returns only Creative Common license photos
 """
-def get_all_photos(tags='', text='', min_taken_date='', max_taken_date='', license='7'):
+def get_all_photos(text='', tags='', tag_mode='any', min_taken_date='', max_taken_date='', license='7'):
     res = flickr.photos_search(
         text=text,
         tags=tags,
+        tag_mode=tag_mode,
         extras='license, date_upload, last_update, date_taken, owner_name, geo, tags, views, url_m',
         license=license,
         min_taken_date=min_taken_date,
@@ -122,6 +120,7 @@ def get_all_photos(tags='', text='', min_taken_date='', max_taken_date='', licen
         next_page_res =  flickr.photos_search(
             text=text,
             tags=tags,
+            tag_mode=tag_mode,
             extras='license, date_upload, last_update, date_taken, owner_name, geo, tags, views, url_m',
             license=license,
             min_taken_date=min_taken_date,
@@ -138,10 +137,11 @@ def get_all_photos(tags='', text='', min_taken_date='', max_taken_date='', licen
 Returns the json list of first 100 photos
 By default returns only Creative Common license photos
 """
-def get_page_photos(tags='', text='', min_taken_date='', max_taken_date='', license='7', per_page=100, page=1):
+def get_page_photos(text='', tags='', tag_mode='any', min_taken_date='', max_taken_date='', license='7', per_page=100, page=1):
     res = flickr.photos_search(
         text=text,
         tags=tags,
+        tag_mode=tag_mode,
         extras='license, date_upload, last_update, date_taken, owner_name, geo, tags, views, url_m',
         license=license,
         min_taken_date=min_taken_date,
@@ -153,6 +153,22 @@ def get_page_photos(tags='', text='', min_taken_date='', max_taken_date='', lice
     photos = res_json['photos']['photo']
     num_photos = len(photos)
     return {'photos': photos, 'length': num_photos}
+
+def get_photo_count(text='', tags='', tag_mode='any', min_taken_date='', max_taken_date='', license='7', per_page=100, page=1):
+    res = flickr.photos_search(
+        text=text,
+        tags=tags,
+        tag_mode=tag_mode,
+        extras='license, date_upload, last_update, date_taken, owner_name, geo, tags, views, url_m',
+        license=license,
+        min_taken_date=min_taken_date,
+        max_taken_date=max_taken_date,
+        per_page=per_page,
+        page=page,
+        format='json')
+    res_json = get_json(res)
+    count = res_json['photos']['total']
+    return int(count)
 
 # <codecell>
 
