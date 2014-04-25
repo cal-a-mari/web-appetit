@@ -84,7 +84,7 @@ Given a flickr api search query with format='json', returns the data in actual j
 
 get_json(flickr.photos_search(
         tag_mode='any',
-        tag='dog',
+        tags='dog',
         license='7',
         format='json'))
 """
@@ -116,10 +116,10 @@ u'photo': [{u'farm': 6,
 def get_photos(flickr_search_response):
     return get_json(flickr_search_response)['photos']['photo']
 
-def get_all_photos(tag='', text='', min_taken_date='', max_taken_date='', license='7'):
+def get_all_photos(tags='', text='', min_taken_date='', max_taken_date='', license='7'):
     res = flickr.photos_search(
         text=text,
-        tag=tag,
+        tags=tags,
         extras='license, date_upload, last_update, date_taken, owner_name, geo, tags, views, url_m',
         license=license,
         min_taken_date=min_taken_date,
@@ -133,12 +133,12 @@ def get_all_photos(tag='', text='', min_taken_date='', max_taken_date='', licens
     for i in range(tot_pages): 
         next_page_res =  flickr.photos_search(
             text=text,
-            tag=tag,
+            tags=tags,
             extras='license, date_upload, last_update, date_taken, owner_name, geo, tags, views, url_m',
             license=license,
             min_taken_date=min_taken_date,
             max_taken_date=max_taken_date,
-            page=i,
+            page=i+2,
             format='json')
         next_page_res_json = get_json(next_page_res)
         photos += next_page_res_json['photos']['photo']
@@ -202,7 +202,7 @@ Examples of how to use function calls:
 
 get_count(flickr.photos_search(
         tag_mode='any',
-        tag='dog',
+        tags='dog',
         license='7',
         format='json'))
 
@@ -216,7 +216,7 @@ get_photos(flickr.photos_search(
 
 # <codecell>
 
-get_all_photos(tag='dogs', text='dogs')
+get_all_photos(tags='dogs', text='dogs')
 
 # <codecell>
 
